@@ -6,6 +6,8 @@ import com.nhnacademy.project.exception.InvalidMoneyAmountException;
 import com.nhnacademy.project.money.Money;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -76,4 +78,13 @@ class MoneyTest {
                         money1.getCurrency().getNationalCode(),
                         money2.getCurrency().getNationalCode());
     }
+
+    @ParameterizedTest
+    @DisplayName("화폐 소수점 2번째 자리까지 출력")
+    @ValueSource(doubles = {1.2345, 1.5678})
+    void getAmount_isRounded(double candidate) {
+        Money money = new Money(candidate, Currency.USD);
+        assertThat(money.getAmount()).isEqualTo(Math.round(candidate * 100) / 100.0);
+    }
+
 }

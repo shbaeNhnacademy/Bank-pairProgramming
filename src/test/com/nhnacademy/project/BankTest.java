@@ -8,6 +8,8 @@ import com.nhnacademy.project.money.Money;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -101,17 +103,6 @@ class BankTest {
 
     }
 
-    // TODO: 여기는 지워도 됩니다.
-    @Test
-    @DisplayName("화폐 더하기 성공 - 소수점 amount")
-    void addMoney_success_usdCurrency() {
-        double amount = 5.25;
-        Money money1 = new Money(amount, Currency.USD);
-        Money money2 = new Money(amount, Currency.USD);
-
-        assertThatCode(() -> bank.addMoney(money1, money2)).doesNotThrowAnyException();
-    }
-
     @Test
     @DisplayName("환전 성공 - USD -> KOR")
     void exchangeMoney_usdToKor() {
@@ -126,9 +117,25 @@ class BankTest {
     @DisplayName("환전 성공 - KOR -> USD")
     void exchangeMoney_korToUsd() {
         double amount = 5000;       // 5원 나와야함.
-        Money money1 = new Money(amount, Currency.KOR);
+        Currency originCurrency = Currency.KOR;
+        Currency targetCurrency = Currency.USD;
+        Money money1 = new Money(amount, originCurrency);
+
 
         //TODO: 수수료 뺀 거 확인.
-        assertThat(bank.exchangeMoney(money1, Currency.USD).getAmount()).isEqualTo(amount / Currency.USD.getExchangeRate());
+        assertThat(bank.exchangeMoney(money1, targetCurrency).getAmount()).isEqualTo(amount / originCurrency.getExchangeRate());
     }
+
+    @DisplayName("환전 이후의 반올림 - USD -> KOR")
+    @ParameterizedTest
+    @ValueSource(doubles = {10.005, 10.004, 10.2, 10.7})
+    void exchangeMoney_success_rounded(double candidate) {
+        Currency originCurrency = Currency.USD;
+        Currency targetCurrency = Currency.KOR;
+        Money money1 = new Money(candidate, originCurrency);
+        Money money = bank.exchangeMoney(money1, targetCurrency);
+        assertThat(money.getAmount()).isEqualTo((Math.round(candidate * 100) / 100.0) * targetCurrency.getExchangeRate());
+    }
+
+
 }

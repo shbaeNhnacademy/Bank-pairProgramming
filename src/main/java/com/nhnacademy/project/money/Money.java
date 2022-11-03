@@ -4,6 +4,8 @@ import com.nhnacademy.project.currency.Currency;
 import com.nhnacademy.project.exception.EqualsDifferentCurrencyException;
 import com.nhnacademy.project.exception.InvalidMoneyAmountException;
 
+import java.util.Optional;
+
 public class Money {
     private final double amount;
     private final Currency currency;
@@ -17,14 +19,16 @@ public class Money {
     }
 
     public double getAmount() {
-        return amount;
+        return  Math.round(this.amount * 100) / 100.0;
     }
 
     public Currency getCurrency() {
         return currency;
     }
 
-    public boolean equals(Money money1) {
+    @Override
+    public boolean equals(Object obj) {
+        Money money1 = (Money) Optional.ofNullable(obj).orElseThrow(IllegalArgumentException::new);
         if(!this.getCurrency().getNationalCode().equals(money1.getCurrency().getNationalCode())) {
             throw new EqualsDifferentCurrencyException(this, money1);
         }

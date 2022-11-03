@@ -24,10 +24,14 @@ public class IbkBank implements Bank{
 
     //TODO: 환전
     @Override
-    public Money exchangeMoney(Money money1, Currency currency) {
-        double exchangeRate = currency.getExchangeRate() / money1.getCurrency().getExchangeRate();
-        double exchangeAmount = money1.getAmount() * exchangeRate;
+    public  Money exchangeMoney(Money money1, Currency currency) {
+        double exchangeAmount = getExchangeAmount(money1, currency);
         return new Money(exchangeAmount, currency);
+    }
+
+    private double getExchangeAmount(Money money1, Currency currency) {
+        double exchangeRate = (double) currency.getExchangeRate() / (double) money1.getCurrency().getExchangeRate();
+        return money1.getAmount() * exchangeRate;
     }
 
     private void checkSameCurrency(Money money1, Money money2) {
