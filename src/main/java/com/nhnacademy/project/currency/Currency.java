@@ -2,7 +2,9 @@ package com.nhnacademy.project.currency;
 
 public enum Currency {
     KOR("KOR",1000),
-    USD("USD",1);
+    USD("USD",1),
+
+    JPY("JPY", 250);
 
     private final String nationalCode;
     private final int exchangeRate;

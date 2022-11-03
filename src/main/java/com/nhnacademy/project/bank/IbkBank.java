@@ -21,8 +21,6 @@ public class IbkBank implements Bank{
         return new Money(totalAmount, money1.getCurrency());
     }
 
-
-    //TODO: 환전
     @Override
     public  Money exchangeMoney(Money money1, Currency currency) {
         double exchangeAmount = getExchangeAmount(money1, currency);

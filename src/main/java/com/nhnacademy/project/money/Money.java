@@ -19,7 +19,7 @@ public class Money {
     }
 
     public double getAmount() {
-        return  Math.round(this.amount * 100) / 100.0;
+        return Math.round(this.amount * 100) / 100.0;
     }
 
     public Currency getCurrency() {
@@ -29,13 +29,14 @@ public class Money {
     @Override
     public boolean equals(Object obj) {
         Money money1 = (Money) Optional.ofNullable(obj).orElseThrow(IllegalArgumentException::new);
-        if(!this.getCurrency().getNationalCode().equals(money1.getCurrency().getNationalCode())) {
+        if (!this.getCurrency().getNationalCode().equals(money1.getCurrency().getNationalCode())) {
             throw new EqualsDifferentCurrencyException(this, money1);
         }
 
-        if(this.getAmount() == money1.getAmount()) {
+        if (this.getAmount() == money1.getAmount()) {
             return true;
         }
+
         return false;
     }
 }

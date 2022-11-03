@@ -11,6 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.only;
@@ -21,10 +24,27 @@ class BankTest {
     //SUT
     Bank bank;
 
-    // TODO: composite 패턴을 사용하여, Bank interface를 받은 여러 은행에 대한 테스트 작성.
     @BeforeEach
     void setUp() {
         bank = new IbkBank();
+    }
+
+    @Test
+    @DisplayName("환율 계산식 검증")
+    void exchangeMoney_validation() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        // 환율 계산식이 신뢰할 수 있는지 확인하기 위한 테스트.
+        Method exchangeMoney = bank.getClass().getDeclaredMethod("exchangeMoney", Money.class, Currency.class);
+        exchangeMoney.setAccessible(true);
+
+        Currency originCurrency = Currency.KOR;
+        Currency targetCurrency = Currency.USD;
+
+        double amount = 1000;
+        Money money = new Money(amount, originCurrency);
+
+        Money invoke = (Money) exchangeMoney.invoke(bank, money, targetCurrency);
+
+        assertThat(invoke.getAmount()).isEqualTo(1);
     }
 
     @Test
@@ -43,10 +63,10 @@ class BankTest {
         double amount = 1000;
         Money money1 = new Money(amount, Currency.KOR);
         Money money2 = new Money(amount, Currency.KOR);
+
         Money addMoney = bank.addMoney(money1, money2);
 
         assertThat(addMoney.getAmount()).isEqualTo(money1.getAmount() + money2.getAmount());
-
     }
 
     @Test
@@ -61,7 +81,6 @@ class BankTest {
                 .hasMessageContainingAll("different currency",
                         money1.getCurrency().getNationalCode(),
                         money2.getCurrency().getNationalCode());
-
     }
 
     @Test
@@ -82,6 +101,7 @@ class BankTest {
         double amount2 = 500;
         Money money1 = new Money(amount1, Currency.KOR);
         Money money2 = new Money(amount2, Currency.KOR);
+
         Money subtractMoney = bank.subtractMoney(money1, money2);
 
         assertThat(subtractMoney.getAmount()).isEqualTo(money1.getAmount() - money2.getAmount());
@@ -100,42 +120,66 @@ class BankTest {
                 .hasMessageContainingAll("different currency",
                         money1.getCurrency().getNationalCode(),
                         money2.getCurrency().getNationalCode());
-
     }
 
     @Test
     @DisplayName("환전 성공 - USD -> KOR")
     void exchangeMoney_usdToKor() {
-        double amount = 5.25;       // 5250원 나와야함.
+        double amount = 5.25;
         Money money1 = new Money(amount, Currency.USD);
 
-        //TODO: 수수료 뺀 거 확인.
         assertThat(bank.exchangeMoney(money1, Currency.KOR).getAmount()).isEqualTo(amount * Currency.KOR.getExchangeRate());
     }
 
     @Test
     @DisplayName("환전 성공 - KOR -> USD")
     void exchangeMoney_korToUsd() {
-        double amount = 5000;       // 5원 나와야함.
+        double amount = 5000;
         Currency originCurrency = Currency.KOR;
         Currency targetCurrency = Currency.USD;
         Money money1 = new Money(amount, originCurrency);
 
-
-        //TODO: 수수료 뺀 거 확인.
         assertThat(bank.exchangeMoney(money1, targetCurrency).getAmount()).isEqualTo(amount / originCurrency.getExchangeRate());
     }
 
     @DisplayName("환전 이후의 반올림 - USD -> KOR")
     @ParameterizedTest
     @ValueSource(doubles = {10.005, 10.004, 10.2, 10.7})
-    void exchangeMoney_success_rounded(double candidate) {
+    void exchangeMoney_success_rounded_usdToKor(double candidate) {
         Currency originCurrency = Currency.USD;
         Currency targetCurrency = Currency.KOR;
         Money money1 = new Money(candidate, originCurrency);
-        Money money = bank.exchangeMoney(money1, targetCurrency);
-        assertThat(money.getAmount()).isEqualTo((Math.round(candidate * 100) / 100.0) * targetCurrency.getExchangeRate());
+
+        Money exchangeMoney = bank.exchangeMoney(money1, targetCurrency);
+
+        assertThat(exchangeMoney.getAmount()).isEqualTo((Math.round(candidate * 100) / 100.0) * targetCurrency.getExchangeRate());
     }
 
+    @DisplayName("환전 이후의 반올림 - KOR -> USD")
+    @ParameterizedTest
+    @ValueSource(doubles = {6.0, 5.0, 4.0})
+    void exchangeMoney_success_rounded_korToUsd(double candidate) {
+        Currency originCurrency = Currency.KOR;
+        Currency targetCurrency = Currency.USD;
+        Money money1 = new Money(candidate, originCurrency);
 
+        double exchangeAmount = candidate / (double) originCurrency.getExchangeRate();
+        Money exchangeMoney = bank.exchangeMoney(money1, targetCurrency);
+
+        assertThat(exchangeMoney.getAmount()).isEqualTo(Math.round(exchangeAmount * 100) / 100.0);
+    }
+
+    @DisplayName("엔화 환전 - JPY -> KOR")
+    @ParameterizedTest
+    @ValueSource(doubles = {250, 251, 1000})
+    void exchangeMoney_jpyToKor(double candidate) {
+        Currency originCurrency = Currency.JPY;
+        Currency targetCurrency = Currency.KOR;
+        Money money1 = new Money(candidate, originCurrency);
+
+        double exchangeRate = (double) targetCurrency.getExchangeRate() / (double) originCurrency.getExchangeRate();
+        Money exchangeMoney = bank.exchangeMoney(money1, targetCurrency);
+
+        assertThat(exchangeMoney.getAmount()).isEqualTo(candidate * exchangeRate);
+    }
 }

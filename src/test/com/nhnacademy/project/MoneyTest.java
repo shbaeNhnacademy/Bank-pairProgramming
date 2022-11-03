@@ -86,5 +86,4 @@ class MoneyTest {
         Money money = new Money(candidate, Currency.USD);
         assertThat(money.getAmount()).isEqualTo(Math.round(candidate * 100) / 100.0);
     }
-
 }
