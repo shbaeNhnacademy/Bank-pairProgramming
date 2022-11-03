@@ -18,30 +18,27 @@ class BankTest {
 
     //SUT
     Bank bank;
+
+    // TODO: composite 패턴을 사용하여, Bank interface를 받은 여러 은행에 대한 테스트 작성.
     @BeforeEach
     void setUp() {
         bank = new IbkBank();
     }
 
-//    @Test
-//    @DisplayName("화폐 equals 성공 ")
-//    void
-
     @Test
     @DisplayName("화폐 더하기 성공 - currency 검증")
     void addMoney_success_currencyCheck() {
-        int amount = 1000;
+        double amount = 1000;
         Money money1 = new Money(amount, Currency.KOR);
         Money money2 = new Money(amount, Currency.KOR);
 
         assertThatCode(() -> bank.addMoney(money1, money2)).doesNotThrowAnyException();
-
     }
 
     @Test
     @DisplayName("화폐 더하기 성공 - amount 검증")
     void addMoney_success_amountCheck() {
-        int amount = 1000;
+        double amount = 1000;
         Money money1 = new Money(amount, Currency.KOR);
         Money money2 = new Money(amount, Currency.KOR);
         Money addMoney = bank.addMoney(money1, money2);
@@ -53,7 +50,7 @@ class BankTest {
     @Test
     @DisplayName("화폐 더하기 실패 - currency 다름 ")
     void addMoney_fail_currencyDifferent() {
-        int amount = 1000;
+        double amount = 1000;
         Money money1 = new Money(amount, Currency.USD);
         Money money2 = new Money(amount, Currency.KOR);
 
@@ -65,12 +62,11 @@ class BankTest {
 
     }
 
-
     @Test
     @DisplayName("화폐 빼기 성공 - currency 검증")
     void subtractMoney_success_currencyCheck() {
-        int amount1 = 1000;
-        int amount2 = 500;
+        double amount1 = 1000;
+        double amount2 = 500;
         Money money1 = new Money(amount1, Currency.KOR);
         Money money2 = new Money(amount2, Currency.KOR);
 
@@ -80,8 +76,8 @@ class BankTest {
     @Test
     @DisplayName("화폐 빼기 성공 - amount 검증")
     void subtractMoney_success_amountCheck() {
-        int amount1 = 1000;
-        int amount2 = 500;
+        double amount1 = 1000;
+        double amount2 = 500;
         Money money1 = new Money(amount1, Currency.KOR);
         Money money2 = new Money(amount2, Currency.KOR);
         Money subtractMoney = bank.subtractMoney(money1, money2);
@@ -92,8 +88,8 @@ class BankTest {
     @Test
     @DisplayName("화폐 빼기 실패 - currency 다름 ")
     void subtractMoney_fail_currencyDifferent() {
-        int amount1 = 1000;
-        int amount2 = 500;
+        double amount1 = 1000;
+        double amount2 = 500;
         Money money1 = new Money(amount1, Currency.USD);
         Money money2 = new Money(amount2, Currency.KOR);
 
@@ -105,7 +101,34 @@ class BankTest {
 
     }
 
+    // TODO: 여기는 지워도 됩니다.
     @Test
-    void exchangeMoney() {
+    @DisplayName("화폐 더하기 성공 - 소수점 amount")
+    void addMoney_success_usdCurrency() {
+        double amount = 5.25;
+        Money money1 = new Money(amount, Currency.USD);
+        Money money2 = new Money(amount, Currency.USD);
+
+        assertThatCode(() -> bank.addMoney(money1, money2)).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("환전 성공 - USD -> KOR")
+    void exchangeMoney_usdToKor() {
+        double amount = 5.25;       // 5250원 나와야함.
+        Money money1 = new Money(amount, Currency.USD);
+
+        //TODO: 수수료 뺀 거 확인.
+        assertThat(bank.exchangeMoney(money1, Currency.KOR).getAmount()).isEqualTo(amount * Currency.KOR.getExchangeRate());
+    }
+
+    @Test
+    @DisplayName("환전 성공 - KOR -> USD")
+    void exchangeMoney_korToUsd() {
+        double amount = 5000;       // 5원 나와야함.
+        Money money1 = new Money(amount, Currency.KOR);
+
+        //TODO: 수수료 뺀 거 확인.
+        assertThat(bank.exchangeMoney(money1, Currency.USD).getAmount()).isEqualTo(amount / Currency.USD.getExchangeRate());
     }
 }

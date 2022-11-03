@@ -1,8 +1,7 @@
 package com.nhnacademy.project.bank;
 
 public enum FeeRate {
-    IBK("Ibk", 0.1)
-    ;
+    IBK("Ibk", 0.1);
 
     private final String bankName;
     private final double feeRate;

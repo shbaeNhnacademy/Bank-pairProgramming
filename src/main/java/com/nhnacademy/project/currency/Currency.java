@@ -1,8 +1,8 @@
 package com.nhnacademy.project.currency;
 
 public enum Currency {
-    KOR("KOR",1),
-    USD("USD",1000);
+    KOR("KOR",1000),
+    USD("USD",1);
 
     private final String nationalCode;
     private final int exchangeRate;

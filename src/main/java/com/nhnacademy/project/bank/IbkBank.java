@@ -10,27 +10,29 @@ public class IbkBank implements Bank{
     @Override
     public Money addMoney(Money money1, Money money2) {
         checkSameCurrency(money1, money2);
-        int totalAmount = money1.getAmount() + money2.getAmount();
+        double totalAmount = money1.getAmount() + money2.getAmount();
         return new Money(totalAmount, money1.getCurrency());
     }
-
 
     @Override
     public Money subtractMoney(Money money1, Money money2) {
         checkSameCurrency(money1, money2);
-        int totalAmount = money1.getAmount() - money2.getAmount();
+        double totalAmount = money1.getAmount() - money2.getAmount();
         return new Money(totalAmount, money1.getCurrency());
     }
 
+
+    //TODO: 환전
     @Override
     public Money exchangeMoney(Money money1, Currency currency) {
-        return null;
+        double exchangeRate = currency.getExchangeRate() / money1.getCurrency().getExchangeRate();
+        double exchangeAmount = money1.getAmount() * exchangeRate;
+        return new Money(exchangeAmount, currency);
     }
+
     private void checkSameCurrency(Money money1, Money money2) {
         if (!money1.getCurrency().getNationalCode().equals(money2.getCurrency().getNationalCode())) {
             throw new CalculateDiffernetCurrencyException(money1, money2);
         }
     }
-
-
 }
